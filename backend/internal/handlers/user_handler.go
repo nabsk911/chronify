@@ -37,23 +37,23 @@ func (uh *UserHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		uh.logger.Printf("Failed to decode register request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload!"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload!"})
 		return
 	}
 
 	// Validation
 	if req.Email == "" || req.Password == "" || req.Username == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Email, username and password are required"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Email, username and password are required"})
 		return
 	}
 
 	if !utils.IsValidEmail(req.Email) {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid email format"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid email format"})
 		return
 	}
 
 	if len(req.Username) < 3 {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Username must be at least 3 characters"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Username must be at least 3 characters"})
 		return
 	}
 
@@ -66,7 +66,7 @@ func (uh *UserHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		uh.logger.Printf("Failed to hash password: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error!"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Internal server error!"})
 		return
 	}
 
@@ -84,15 +84,15 @@ func (uh *UserHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 			if pgErr.Code == "23505" {
 				switch pgErr.ConstraintName {
 				case "users_email_key":
-					utils.WriteJSON(w, http.StatusConflict, utils.Envelope{"error": "Email already exists"})
+					utils.WriteJSON(w, http.StatusConflict, utils.Envelope{"message": "Email already exists"})
 					return
 				case "users_username_key":
-					utils.WriteJSON(w, http.StatusConflict, utils.Envelope{"error": "Username already exists"})
+					utils.WriteJSON(w, http.StatusConflict, utils.Envelope{"message": "Username already exists"})
 					return
 				}
 			}
 		}
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to create user!"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to create user!"})
 		return
 
 	}
@@ -108,17 +108,17 @@ func (uh *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		uh.logger.Printf("Failed to decode login request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload!"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload!"})
 		return
 	}
 
 	if req.Email == "" || req.Password == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Email and password are required"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Email and password are required"})
 		return
 	}
 
 	if !utils.IsValidEmail(req.Email) {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid email format"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid email format"})
 		return
 	}
 
@@ -126,7 +126,7 @@ func (uh *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		uh.logger.Printf("Failed to retrieve user %s: %v", req.Email, err)
-		utils.WriteJSON(w, http.StatusUnauthorized, utils.Envelope{"error": "Invalid credentials!"})
+		utils.WriteJSON(w, http.StatusUnauthorized, utils.Envelope{"message": "Invalid credentials!"})
 		return
 	}
 
@@ -134,19 +134,19 @@ func (uh *UserHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		uh.logger.Printf("Error checking password hash: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error!"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Internal server error!"})
 		return
 	}
 
 	if !passwordMatches {
-		utils.WriteJSON(w, http.StatusUnauthorized, utils.Envelope{"error": "Invalid credentials!"})
+		utils.WriteJSON(w, http.StatusUnauthorized, utils.Envelope{"message": "Invalid credentials!"})
 		return
 	}
 
 	token, err := auth.GenerateToken(user.ID.String())
 	if err != nil {
 		uh.logger.Printf("Failed to generate token: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Internal server error"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Internal server error"})
 		return
 	}
 

@@ -31,19 +31,19 @@ func (eh *EventHandler) HandleCreateAIEvents(w http.ResponseWriter, r *http.Requ
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		eh.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 
 	var req AIEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		eh.logger.Printf("Failed to decode request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload"})
 		return
 	}
 
 	if req.Prompt == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Prompt is required"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Prompt is required"})
 		return
 	}
 
@@ -54,7 +54,7 @@ func (eh *EventHandler) HandleCreateAIEvents(w http.ResponseWriter, r *http.Requ
 	})
 	if err != nil {
 		eh.logger.Printf("Failed to create GeminiAI client: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to create GeminiAI client"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to create GeminiAI client"})
 		return
 	}
 
@@ -98,7 +98,7 @@ func (eh *EventHandler) HandleCreateAIEvents(w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		eh.logger.Printf("Failed to generate content: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to generate content"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to generate content"})
 		return
 	}
 
@@ -106,7 +106,7 @@ func (eh *EventHandler) HandleCreateAIEvents(w http.ResponseWriter, r *http.Requ
 
 	if err := json.Unmarshal([]byte(response.Candidates[0].Content.Parts[0].Text), &timelineEvents); err != nil {
 		eh.logger.Printf("Failed to decode request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload"})
 		return
 	}
 
@@ -126,14 +126,14 @@ func (eh *EventHandler) HandleCreateAIEvents(w http.ResponseWriter, r *http.Requ
 	_, err = eh.eventStore.BulkCreateEvents(r.Context(), createParams)
 	if err != nil {
 		eh.logger.Printf("Failed to create events: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to create events"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to create events"})
 		return
 	}
 
 	events, err := eh.eventStore.GetEventsByTimelineId(r.Context(), timelineID)
 	if err != nil {
 		eh.logger.Printf("Failed to retrieve events: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve events"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve events"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"events": events})

@@ -36,7 +36,7 @@ func (th *TimelineHandler) HandleCreateTimeline(w http.ResponseWriter, r *http.R
 	var userID pgtype.UUID
 	if err := userID.Scan(userIDStr); err != nil {
 		th.logger.Printf("Invalid user ID format: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid user ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid user ID"})
 		return
 	}
 
@@ -44,11 +44,11 @@ func (th *TimelineHandler) HandleCreateTimeline(w http.ResponseWriter, r *http.R
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		th.logger.Printf("Failed to decode timeline request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload!"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload!"})
 		return
 	}
 	if req.Title == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Title  is required"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Title  is required"})
 		return
 	}
 
@@ -65,12 +65,12 @@ func (th *TimelineHandler) HandleCreateTimeline(w http.ResponseWriter, r *http.R
 			if pgErr.Code == "23505" {
 				switch pgErr.ConstraintName {
 				case "timelines_title_key":
-					utils.WriteJSON(w, http.StatusConflict, utils.Envelope{"error": "Timeline with this title already exists"})
+					utils.WriteJSON(w, http.StatusConflict, utils.Envelope{"message": "Timeline with this title already exists"})
 					return
 				}
 			}
 		}
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to create timeline"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to create timeline"})
 		return
 
 	}
@@ -84,14 +84,14 @@ func (th *TimelineHandler) HandleGetTimelines(w http.ResponseWriter, r *http.Req
 	var userID pgtype.UUID
 	if err := userID.Scan(userIDStr); err != nil {
 		th.logger.Printf("Invalid user ID format: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid user ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid user ID"})
 		return
 	}
 
 	timelines, err := th.timelineStore.GetTimelinesByUserId(r.Context(), userID)
 	if err != nil {
 		th.logger.Printf("Failed to retrieve timeline for user %s: %v", userIDStr, err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve timeline"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve timeline"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": timelines})
@@ -101,13 +101,13 @@ func (th *TimelineHandler) HandleGetTimelineById(w http.ResponseWriter, r *http.
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		th.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 	timeline, err := th.timelineStore.GetTimeLineById(r.Context(), timelineID)
 	if err != nil {
 		th.logger.Printf("Failed to retrieve timeline: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve timeline"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve timeline"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": timeline})
@@ -120,7 +120,7 @@ func (th *TimelineHandler) HandleSearchTimeline(w http.ResponseWriter, r *http.R
 	var userID pgtype.UUID
 	if err := userID.Scan(userIDStr); err != nil {
 		th.logger.Printf("Invalid user ID format: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid user ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid user ID"})
 		return
 	}
 
@@ -130,7 +130,7 @@ func (th *TimelineHandler) HandleSearchTimeline(w http.ResponseWriter, r *http.R
 	})
 	if err != nil {
 		th.logger.Printf("Failed to retrieve timeline for user %s: %v", userIDStr, err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve timeline"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve timeline"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": timelines})
@@ -140,18 +140,18 @@ func (th *TimelineHandler) HandleUpdateTimeline(w http.ResponseWriter, r *http.R
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		th.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 	var req timelineRequest
 	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		th.logger.Printf("Failed to decode timeline request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload!"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload!"})
 		return
 	}
 	if req.Title == "" {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Title is required"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Title is required"})
 		return
 	}
 
@@ -163,7 +163,7 @@ func (th *TimelineHandler) HandleUpdateTimeline(w http.ResponseWriter, r *http.R
 
 	if err != nil {
 		th.logger.Printf("Failed to update timeline: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to update timeline"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to update timeline"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"data": timeline})
@@ -173,13 +173,13 @@ func (th *TimelineHandler) HandleDeleteTimeline(w http.ResponseWriter, r *http.R
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		th.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 	err = th.timelineStore.DeleteTimeline(r.Context(), timelineID)
 	if err != nil {
 		th.logger.Printf("Failed to delete timeline: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to delete timeline"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to delete timeline"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"message": "Timeline deleted successfully"})

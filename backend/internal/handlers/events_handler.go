@@ -34,14 +34,14 @@ func (eh *EventHandler) HandleGetEventsByTimelineId(w http.ResponseWriter, r *ht
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		eh.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 
 	events, err := eh.eventStore.GetEventsByTimelineId(r.Context(), timelineID)
 	if err != nil {
 		eh.logger.Printf("Failed to retrieve events: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve events"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve events"})
 		return
 	}
 	utils.WriteJSON(w, http.StatusOK, utils.Envelope{"events": events})
@@ -51,19 +51,19 @@ func (eh *EventHandler) HandleUpsertEvents(w http.ResponseWriter, r *http.Reques
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		eh.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 
 	var req []UpsertEventRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		eh.logger.Printf("Failed to decode request: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid request payload"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid request payload"})
 		return
 	}
 
 	if len(req) == 0 {
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "No events provided"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "No events provided"})
 		return
 	}
 
@@ -99,7 +99,7 @@ func (eh *EventHandler) HandleUpsertEvents(w http.ResponseWriter, r *http.Reques
 		_, err := eh.eventStore.BulkCreateEvents(ctx, createParams)
 		if err != nil {
 			eh.logger.Printf("Failed to create events: %v", err)
-			utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to create events"})
+			utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to create events"})
 			return
 		}
 	}
@@ -111,7 +111,7 @@ func (eh *EventHandler) HandleUpsertEvents(w http.ResponseWriter, r *http.Reques
 		results.Exec(func(i int, err error) {
 			if err != nil {
 				eh.logger.Printf("Failed to update event: %v", err)
-				utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to update one or more events"})
+				utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to update one or more events"})
 				return
 			}
 		})
@@ -121,7 +121,7 @@ func (eh *EventHandler) HandleUpsertEvents(w http.ResponseWriter, r *http.Reques
 	events, err := eh.eventStore.GetEventsByTimelineId(ctx, timelineID)
 	if err != nil {
 		eh.logger.Printf("Failed to retrieve events: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve events"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve events"})
 		return
 	}
 
@@ -132,28 +132,28 @@ func (eh *EventHandler) HandleDeleteEvent(w http.ResponseWriter, r *http.Request
 	timelineID, err := utils.ReadIDParam(r, "timelineId")
 	if err != nil {
 		eh.logger.Printf("Invalid timeline ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid timeline ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid timeline ID"})
 		return
 	}
 
 	eventID, err := utils.ReadIDParam(r, "eventId")
 	if err != nil {
 		eh.logger.Printf("Invalid event ID: %v", err)
-		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"error": "Invalid event ID"})
+		utils.WriteJSON(w, http.StatusBadRequest, utils.Envelope{"message": "Invalid event ID"})
 		return
 	}
 
 	err = eh.eventStore.DeleteEvent(r.Context(), eventID)
 	if err != nil {
 		eh.logger.Printf("Failed to delete event: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to delete event"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to delete event"})
 		return
 	}
 
 	events, err := eh.eventStore.GetEventsByTimelineId(r.Context(), timelineID)
 	if err != nil {
 		eh.logger.Printf("Failed to retrieve events: %v", err)
-		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"error": "Failed to retrieve events"})
+		utils.WriteJSON(w, http.StatusInternalServerError, utils.Envelope{"message": "Failed to retrieve events"})
 		return
 	}
 
