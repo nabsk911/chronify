@@ -14,7 +14,7 @@ import (
 const createTimeline = `-- name: CreateTimeline :one
 INSERT INTO TIMELINES (user_id, title, description)
 VALUES ($1, $2, $3)
-RETURNING id, user_id, title, description
+RETURNING id, user_id, title, description, created_at
 `
 
 type CreateTimelineParams struct {
@@ -24,10 +24,11 @@ type CreateTimelineParams struct {
 }
 
 type CreateTimelineRow struct {
-	ID          pgtype.UUID `json:"id"`
-	UserID      pgtype.UUID `json:"user_id"`
-	Title       string      `json:"title"`
-	Description pgtype.Text `json:"description"`
+	ID          pgtype.UUID        `json:"id"`
+	UserID      pgtype.UUID        `json:"user_id"`
+	Title       string             `json:"title"`
+	Description pgtype.Text        `json:"description"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 func (q *Queries) CreateTimeline(ctx context.Context, arg CreateTimelineParams) (CreateTimelineRow, error) {
@@ -38,6 +39,7 @@ func (q *Queries) CreateTimeline(ctx context.Context, arg CreateTimelineParams) 
 		&i.UserID,
 		&i.Title,
 		&i.Description,
+		&i.CreatedAt,
 	)
 	return i, err
 }

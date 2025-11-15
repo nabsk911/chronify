@@ -1,7 +1,7 @@
 -- name: CreateTimeline :one
 INSERT INTO TIMELINES (user_id, title, description)
 VALUES ($1, $2, $3)
-RETURNING id, user_id, title, description;
+RETURNING id, user_id, title, description, created_at;
 
 -- name: GetTimeLineById :one
 SELECT * FROM timelines
