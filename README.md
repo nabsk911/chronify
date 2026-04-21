@@ -90,10 +90,9 @@ The project follows a standard Go application layout for a clean separation of c
    ```
 3. Set up the environment variables. Create a `.env` file in the root directory:
    ```env
-   DATABASE_URL=postgres://user:pass@localhost:5432/chronify
-   JWT_SECRET=your_jwt_secret
    GEMINI_API_KEY=your_gemini_api_key
-   PORT=8080
+   DB_URL=postgres://user:pass@localhost:5432/chronify
+   JWT_SECRET_KEY=your_jwt_secret
    ```
 4. Run database migrations (using [goose](https://github.com/pressly/goose)):
    ```bash
